@@ -1,0 +1,37 @@
+{
+	"__ver": "sys-pkg:1",
+	"_id": "QAmy87TzTuGLOuAI-IfNuw",
+	"key": "sys.dbui.perspective.default.Country",
+	"system": false,
+	"value": {
+		"edit": {
+			"layout": [
+				"name",
+				"code"
+			]
+		},
+		"list": {
+			"fields": [
+				"name",
+				"code"
+			],
+			"sort": {
+				"name": "asc"
+			}
+		},
+		"picker_list": {
+			"fields": [
+				"name"
+			],
+			"sort": {
+				"name": "asc"
+			}
+		},
+		"view": {
+			"layout": [
+				"name",
+				"code"
+			]
+		}
+	}
+}

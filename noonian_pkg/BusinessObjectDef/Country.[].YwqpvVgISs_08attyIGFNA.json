@@ -1,0 +1,14 @@
+{
+	"__ver": "sys-pkg:1",
+	"_id": "YwqpvVgISs_08attyIGFNA",
+	"class_name": "Country",
+	"definition": {
+		"code": {
+			"type": "string"
+		},
+		"name": {
+			"type": "string"
+		}
+	},
+	"system": false
+}
