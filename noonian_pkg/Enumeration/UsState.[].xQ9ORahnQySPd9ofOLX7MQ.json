@@ -1,5 +1,5 @@
 {
-	"__ver": "sys-pkg:1",
+	"__ver": "sys-pkg:2",
 	"_id": "xQ9ORahnQySPd9ofOLX7MQ",
 	"name": "UsState",
 	"values": [
@@ -52,6 +52,7 @@
 		"WA",
 		"WV",
 		"WI",
-		"WY"
+		"WY",
+		"DC"
 	]
 }
