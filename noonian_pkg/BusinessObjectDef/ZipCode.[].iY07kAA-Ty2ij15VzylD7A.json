@@ -1,0 +1,30 @@
+{
+	"__ver": "sys-pkg:2",
+	"_id": "iY07kAA-Ty2ij15VzylD7A",
+	"abstract": false,
+	"class_name": "ZipCode",
+	"definition": {
+		"_disp": "<%= zip %>",
+		"city": {
+			"type": "string"
+		},
+		"county": {
+			"type": "string"
+		},
+		"location": {
+			"type": "object"
+		},
+		"state": {
+			"enum": "UsState",
+			"type": "enum"
+		},
+		"zip": {
+			"type": "string"
+		},
+		"zip_class": {
+			"type": "string"
+		}
+	},
+	"doc": "\n @property {string} city \n @property {string} county \n @property {object} location \n @property {enum} state \n @property {string} zip \n @property {string} zip_class \n",
+	"system": false
+}
