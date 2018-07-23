@@ -1,5 +1,5 @@
 {
-	"__ver": "sys-pkg:2",
+	"__ver": "sys-pkg:3",
 	"_id": "0INXkjd1TqumDz3NFi9piQ",
 	"key": "db.enum.UsState",
 	"language": {
@@ -15,6 +15,7 @@
 		"CA": "California",
 		"CO": "Colorado",
 		"CT": "Connecticut",
+		"DC": "District of Columbia",
 		"DE": "Delaware",
 		"FL": "Florida",
 		"GA": "Georgia",
