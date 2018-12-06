@@ -1,0 +1,17 @@
+{
+	"__ver": "ffi-pledge-db:1",
+	"_id": "LE6B3AGzSj-3zFUJx_0QOw",
+	"key": "sys.dbui.bo.GeocodeCache",
+	"language": {
+		"_disp": "English",
+		"_id": "-9vPfv2lEeSFtiimx_V4dw",
+		"code": "en"
+	},
+	"system": false,
+	"value": {
+		"city": "City",
+		"latlng": "Latlng",
+		"state": "State",
+		"zip": "Zip"
+	}
+}

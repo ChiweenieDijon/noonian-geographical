@@ -1,0 +1,23 @@
+{
+	"__ver": "ffi-pledge-db:1|sys-pkg:1",
+	"_id": "4q5jf2jdQmW582pyWrklnw",
+	"abstract": false,
+	"class_name": "GeocodeCache",
+	"definition": {
+		"city": {
+			"type": "string"
+		},
+		"latlng": {
+			"type": "object"
+		},
+		"state": {
+			"enum": "UsState",
+			"type": "enum"
+		},
+		"zip": {
+			"type": "string"
+		}
+	},
+	"doc": "\n @property {string} city \n @property {object} latlng \n @property {enum} state \n @property {string} zip \n",
+	"system": false
+}

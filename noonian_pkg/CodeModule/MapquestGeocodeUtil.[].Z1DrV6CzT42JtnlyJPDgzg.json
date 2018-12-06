@@ -1,0 +1,7 @@
+{
+	"__ver": "ffi-pledge-db:5|sys-pkg:1",
+	"_id": "Z1DrV6CzT42JtnlyJPDgzg",
+	"doc": "Geocoding using mapquest API\nMapquestGeocodeUtil.translateAddress({address,city,state,zip});\n@return",
+	"name": "MapquestGeocodeUtil",
+	"path": "/geographical"
+}
