@@ -1,0 +1,318 @@
+{
+"metadata":{
+	"_id": "sH5R-2tYQKSZm7qyvOdQxA",
+	"changelog": [
+	],
+	"description": "Countries, Cities, Zip Codes, etc.",
+	"enable_building": false,
+	"key": "sys.geographical",
+	"major_version": 0,
+	"manifest": {
+		"BusinessObjectDef": {
+			"4q5jf2jdQmW582pyWrklnw": "ffi-pledge-db:1|sys-pkg:1",
+			"YwqpvVgISs_08attyIGFNA": "sys-pkg:1"
+		},
+		"CodeModule": {
+			"Z1DrV6CzT42JtnlyJPDgzg": "ffi-pledge-db:5|sys-pkg:1"
+		},
+		"Config": {
+			"LVNA_vm_QW6Lh3M0AImYjA": "ffi-pledge-db:1|sys-pkg:2",
+			"QAmy87TzTuGLOuAI-IfNuw": "sys-pkg:1"
+		},
+		"Enumeration": {
+			"xQ9ORahnQySPd9ofOLX7MQ": "sys-pkg:3"
+		},
+		"LabelGroup": {
+			"0INXkjd1TqumDz3NFi9piQ": "sys-pkg:5",
+			"O2Eb-H41TSeHB1iZjCREjQ": "sys-pkg:3"
+		},
+		"WebService": {
+			"5IIZACEBRiq_kJS9c0TBWQ": "sys-pkg:1",
+			"R7ssRvWcTU2ZUe1npaZuoA": "sys-pkg:3"
+		}
+	},
+	"minor_version": 9,
+	"name": "Geographical Data"
+},
+"business_objects":[
+{
+	"__disp": "GeocodeCache",
+	"__ver": "ffi-pledge-db:1|sys-pkg:1",
+	"_class": "BusinessObjectDef",
+	"_id": "4q5jf2jdQmW582pyWrklnw",
+	"abstract": false,
+	"class_name": "GeocodeCache",
+	"definition": {
+		"city": {
+			"type": "string"
+		},
+		"latlng": {
+			"type": "object"
+		},
+		"state": {
+			"enum": "UsState",
+			"type": "enum"
+		},
+		"zip": {
+			"type": "string"
+		}
+	},
+	"doc": "\n @property {string} city \n @property {object} latlng \n @property {enum} state \n @property {string} zip \n",
+	"system": false
+},
+{
+	"__ver": "sys-pkg:1",
+	"_class": "BusinessObjectDef",
+	"_id": "YwqpvVgISs_08attyIGFNA",
+	"class_name": "Country",
+	"definition": {
+		"code": {
+			"type": "string"
+		},
+		"name": {
+			"type": "string"
+		}
+	},
+	"system": false
+},
+{
+	"__ver": "ffi-pledge-db:5|sys-pkg:1",
+	"_class": "CodeModule",
+	"_id": "Z1DrV6CzT42JtnlyJPDgzg",
+	"code": "function (httpRequestLib, Q, db) {\n    var exports = {};\n    \n    const urlBase = 'http://www.mapquestapi.com/geocoding/v1/address?key=[INSERT API KEY HERE!!!]&location=';\n    \n    const callApi = function(addressObj) {\n        var deferred = Q.defer();\n        \n        var addy = addressObj.address || '';\n        \n        if(addy) addy += ',';\n        \n        if(addressObj.city) {\n            addy += addressObj.city + ' ';\n        }\n        if(addressObj.state) {\n            addy += addressObj.state;\n        }\n        if(addressObj.zip) {\n            if(addy) addy += ',';\n            addy += addressObj.zip;\n        }\n        \n        console.log('Attempting address: %s', addy);\n        \n        if(!addy) {\n            return Q(null);\n        }\n        \n        httpRequestLib( {\n            uri:urlBase+addy,\n            json:true\n        }, function(err, httpResponse, body) {\n            body = body || {};\n            if(err) {\n                deferred.reject(err);\n            }\n            else {\n                console.log(body);\n                console.log(httpResponse);\n                var result = body && body.results && body.results[0]; \n                var loc = result && result.locations && result.locations[0];\n                \n                if(loc && loc.latLng) {\n                    deferred.resolve(loc.latLng);\n                }\n                else {\n                    console.error('BAD RESPONSE FROM MAPQUEST %j', body);\n                    deferred.reject('BAD RESPONSE');\n                }\n            }\n            \n        });//end httpRequest.post\n        \n        return deferred.promise;\n    };\n    \n    exports.translateCityState = function(city, state) {\n         \n        var queryObj = {\n            city, state\n        };\n        \n        return db.GeocodeCache.findOne(queryObj).then(function(bo) {\n            if(bo) {\n                return bo.latlng;\n            }\n            \n            return callApi(queryObj).then(function(loc) {\n                var newBo = new db.GeocodeCache(queryObj);\n                newBo.latlng = loc;\n                \n                return newBo.save().then(()=>{return loc;});\n            });\n        });\n        \n    };\n    \n    exports.translateAddress = function(addressObj) {\n        \n        if(addressObj.address) {\n            //Skip cache for specific address\n            return callApi(addressObj);\n        }\n        var queryObj;\n        \n        if(addressObj.zip) {\n            queryObj = {zip:addressObj.zip}\n        }\n        else {\n            queryObj = addressObj;\n        }\n        \n        return db.GeocodeCache.findOne(queryObj).then(function(bo) {\n            if(bo) {\n                return bo.latlng;\n            }\n            \n            \n            return callApi(queryObj).then(function(loc) {\n                var newBo = new db.GeocodeCache(queryObj);\n                newBo.latlng = loc;\n                \n                return newBo.save().then(()=>{return loc;});\n            });\n        });\n        \n    };\n    \n    \n    return exports;\n}",
+	"doc": "Geocoding using mapquest API\nMapquestGeocodeUtil.translateAddress({address,city,state,zip});\n@return",
+	"name": "MapquestGeocodeUtil",
+	"path": "/geographical"
+},
+{
+	"__ver": "ffi-pledge-db:1|sys-pkg:2",
+	"_class": "Config",
+	"_id": "LVNA_vm_QW6Lh3M0AImYjA",
+	"allow_customize": false,
+	"key": "sys.dbui.perspective.default.GeocodeCache",
+	"rolespec": [
+	],
+	"system": false,
+	"value": {
+		"edit": {
+			"layout": [
+				"zip",
+				"city",
+				"state",
+				"latlng"
+			]
+		},
+		"list": {
+			"fields": [
+				"zip",
+				"city",
+				"state",
+				"latlng"
+			]
+		},
+		"view": {
+			"layout": [
+				"zip",
+				"city",
+				"state",
+				"latlng"
+			]
+		}
+	}
+},
+{
+	"__ver": "sys-pkg:1",
+	"_class": "Config",
+	"_id": "QAmy87TzTuGLOuAI-IfNuw",
+	"key": "sys.dbui.perspective.default.Country",
+	"system": false,
+	"value": {
+		"edit": {
+			"layout": [
+				"name",
+				"code"
+			]
+		},
+		"list": {
+			"fields": [
+				"name",
+				"code"
+			],
+			"sort": {
+				"name": "asc"
+			}
+		},
+		"picker_list": {
+			"fields": [
+				"name"
+			],
+			"sort": {
+				"name": "asc"
+			}
+		},
+		"view": {
+			"layout": [
+				"name",
+				"code"
+			]
+		}
+	}
+},
+{
+	"__ver": "sys-pkg:3",
+	"_class": "Enumeration",
+	"_id": "xQ9ORahnQySPd9ofOLX7MQ",
+	"name": "UsState",
+	"values": [
+		"AL",
+		"AK",
+		"AZ",
+		"AR",
+		"CA",
+		"CO",
+		"CT",
+		"DE",
+		"FL",
+		"GA",
+		"HI",
+		"ID",
+		"IL",
+		"IN",
+		"IA",
+		"KS",
+		"KY",
+		"LA",
+		"ME",
+		"MD",
+		"MA",
+		"MI",
+		"MN",
+		"MS",
+		"MO",
+		"MT",
+		"NE",
+		"NV",
+		"NH",
+		"NJ",
+		"NM",
+		"NY",
+		"NC",
+		"ND",
+		"OH",
+		"OK",
+		"OR",
+		"PA",
+		"RI",
+		"SC",
+		"SD",
+		"TN",
+		"TX",
+		"UT",
+		"VT",
+		"VA",
+		"WA",
+		"WV",
+		"WI",
+		"WY",
+		"DC"
+	]
+},
+{
+	"__ver": "sys-pkg:5",
+	"_class": "LabelGroup",
+	"_id": "0INXkjd1TqumDz3NFi9piQ",
+	"key": "db.enum.UsState",
+	"language": {
+		"_disp": "English",
+		"_id": "-9vPfv2lEeSFtiimx_V4dw",
+		"code": "en"
+	},
+	"value": {
+		"AK": "Alaska",
+		"AL": "Alabama",
+		"AR": "Arkansas",
+		"AZ": "Arizona",
+		"CA": "California",
+		"CO": "Colorado",
+		"CT": "Connecticut",
+		"DC": "District of Columbia",
+		"DE": "Delaware",
+		"FL": "Florida",
+		"GA": "Georgia",
+		"HI": "Hawaii",
+		"IA": "Iowa",
+		"ID": "Idaho",
+		"IL": "Illinois",
+		"IN": "Indiana",
+		"KS": "Kansas",
+		"KY": "Kentucky",
+		"LA": "Louisiana",
+		"MA": "Massachusetts",
+		"MD": "Maryland",
+		"ME": "Maine",
+		"MI": "Michigan",
+		"MN": "Minnesota",
+		"MO": "Missouri",
+		"MS": "Mississippi",
+		"MT": "Montana",
+		"NC": "North Carolina",
+		"ND": "North Dakota",
+		"NE": "Nebraska",
+		"NH": "New Hampshire",
+		"NJ": "New Jersey",
+		"NM": "New Mexico",
+		"NV": "Nevada",
+		"NY": "New York",
+		"OH": "Ohio",
+		"OK": "Oklahoma",
+		"OR": "Oregon",
+		"PA": "Pennsylvania",
+		"RI": "Rhode Island",
+		"SC": "South Carolina",
+		"SD": "South Dakota",
+		"TN": "Tennessee",
+		"TX": "Texas",
+		"UT": "Utah",
+		"VA": "Virginia",
+		"VT": "Vermont",
+		"WA": "Washington",
+		"WI": "Wisconsin",
+		"WV": "West Virginia",
+		"WY": "Wyoming"
+	}
+},
+{
+	"__ver": "sys-pkg:3",
+	"_class": "LabelGroup",
+	"_id": "O2Eb-H41TSeHB1iZjCREjQ",
+	"key": "sys.dbui.bo.Country",
+	"language": {
+		"_disp": "English",
+		"_id": "-9vPfv2lEeSFtiimx_V4dw",
+		"code": "en"
+	},
+	"value": {
+		"code": "Code",
+		"name": "Name"
+	}
+},
+{
+	"__disp": "/test",
+	"__ver": "sys-pkg:1",
+	"_class": "WebService",
+	"_id": "5IIZACEBRiq_kJS9c0TBWQ",
+	"function": "function (httpRequestLib) {\n    var url = `http://gomashup.com/json.php?fds=geo/usa/zipcode/state/CA&jsoncallback=processResult`;\n    httpRequestLib.get({uri:url}, (err, httpResponse, body) =>{\n            console.log(body);\n    });\n}",
+	"path": "/test",
+	"rolespec": [
+	]
+},
+{
+	"__disp": "/util/farmMashup",
+	"__ver": "sys-pkg:3",
+	"_class": "WebService",
+	"_id": "R7ssRvWcTU2ZUe1npaZuoA",
+	"function": "function (db, _, Q, httpRequestLib) {\n    \n\n    const processResult = function(resultObj) {\n        var promiseArr = [];\n        _.forEach(resultObj.result, r => {\n            var curr = new db.ZipCode({\n                zip:r.Zipcode,\n                zip_class:r.ZipClass,\n                location:{\n                    lat:r.Latitude,\n                    lng:r.Longitude\n                },\n                state:r.State,\n                city: _.startCase(r.City.toLowerCase()),\n                county: _.startCase(r.County.toLowerCase()),\n            });\n            \n            promiseArr.push(curr.save());\n        });\n        \n        // var deferred = Q.defer();\n        return Q.all(promiseArr);\n        // .then(() => {\n        //     setTimeout(()=>{\n        //         deferred.resolve(true);\n        //     }, 30000);\n        // })\n        \n        // return deferred.promise;\n    };\n    \n    var url = `http://gomashup.com/json.php?fds=geo/usa/zipcode/state/DC&jsoncallback=processResult`;\n     httpRequestLib.get({uri:url}, (err, httpResponse, body) =>{\n        if(err || !body) {\n            console.error(err);\n            console.log(body);\n        }\n        eval(body);\n    });\n    \n    // return db.Enumeration.findOne({name:'UsState'}).then(function(enumObj) {\n    //     var promiseChain = Q(true);\n        \n    //     _.forEach(enumObj.values, state => {\n    //         var url = `http://gomashup.com/json.php?fds=geo/usa/zipcode/state/${state}&jsoncallback=processResult`;\n    //         promiseChain = promiseChain.then(()=>{\n    //             console.log('processing '+state);\n    //             var deferred = Q.defer()\n    //             httpRequestLib.get({uri:url}, (err, httpResponse, body) =>{\n    //                 if(err || !body) {\n    //                     console.error(err);\n    //                     console.log(body);\n    //                     return deferred.reject(err);\n    //                 }\n    //                 deferred.resolve(eval(body));\n    //             });\n    //             return deferred.promise;\n    //         })\n    //     });\n        \n    //     return promiseChain.then(() => {return \"completed\"});\n        \n    // })\n}",
+	"path": "/util/farmMashup",
+	"rolespec": [
+	]
+}]}
